@@ -75,6 +75,19 @@ draw.tree <- function(raw.tree){
     if(!is.na(raw.tree[2*index])) arrow.pointer[arrow.pointer[, "Number"]==data[k], "Left"] <- 1
     if(!is.na(raw.tree[2*index + 1])) arrow.pointer[arrow.pointer[, "Number"]==data[k], "Right"] <- 1
     }
+   
+  tree.values <- raw.tree[2:3]   
+  ind.left  <- arrow.pointer[arrow.pointer[, "Number"]==raw.tree[1], "Left"]
+  ind.right <- arrow.pointer[arrow.pointer[, "Number"]==raw.tree[1], "Right"]
+  
+  if(!is.na(ind.left)){
+    segments(x0 = median(x.param), y0 = scale + 0.5, x1 = median(x.param)/2, y1 = scale - 0.5, lty=2)
+  }
+  
+  if(!is.na(ind.right)){
+    segments(x0 = median(x.param), y0 = scale + 0.5, x1 = 1.5*median(x.param), y1 = scale - 0.5, lty=2)
+  }
+  
   
   for(h in 1:(scale-1)){
     tree.values  <- raw.tree[(2^h):(2^(h+1) - 1)]
@@ -83,20 +96,7 @@ draw.tree <- function(raw.tree){
     x.start <- x.start - x.start/2
     x.coord <- seq(from=x.start, to=x.end, length.out=2^h)
     
-    if(!is.na(tree.values[1])){
-      points(x = x.start, y = scale - h + 0.5, col = "blue", pch = 1, cex = 4)
-      segments(x0 = x.coord[1], y0 = scale - h + 0.5, x1 = median(x.param), y1 = scale - h + 1.5, lty=2)
-      text(x.start, scale - h + 0.5 , tree.values[1], cex = 1.2)
-    }
-    
-    if(!is.na(tree.values[2])){
-      points(x = x.start, y = scale - h + 0.5, col = "blue", pch = 1, cex = 4)
-      segments(x0 = x.coord[2], y0 = scale - h + 0.5, x1 = median(x.param), y1 = scale - h + 1.5, lty=2)
-      text(x.start, scale - h + 0.5 , tree.values[1], cex = 1.2)
-    }
-    
-      
-    for(j in 2:length(tree.values)){
+    for(j in 1:length(tree.values)){
       if(!is.na(tree.values[j])){ 
         ind.left  <- arrow.pointer[arrow.pointer[, "Number"]==tree.values[j], "Left"]
         ind.right <- arrow.pointer[arrow.pointer[, "Number"]==tree.values[j], "Right"]
@@ -112,7 +112,8 @@ draw.tree <- function(raw.tree){
           segments(x0 = x.coord[j], y0 = scale - h + 0.5, x1 = x.coord1[2*j], y1 = scale - h -0.5, lty=2)
         }
         
-          text(x.coord[j] , scale - h + 0.5, tree.values[j], cex = 1.2)}
+          text(x.coord[j] , scale - h + 0.5, tree.values[j], cex = 1.2)
+      }
     }
   }
   
