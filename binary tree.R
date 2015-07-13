@@ -121,7 +121,58 @@ draw.tree <- function(raw.tree){
 
 draw.tree(raw.tree)
 
+search.tree <- function(raw.tree, key){
+  compare  <- raw.tree[1]
+  i     <- 1
+  depth <- get.depth(raw.tree)
+  
+  while(i <= 2^depth){
+    if(is.na(compare)){ 
+      cat(key, "is not in the tree\n")
+      break
+    }
+    if(key==compare){
+      node <- i
+      break
+    }else{ 
+       if(key < compare && !is.na(compare)) compare <- raw.tree[2*i]
+       if(key > compare && !is.na(compare)) compare <- raw.tree[2*i + 1]
+       if(!is.na(compare)) i <- which(raw.tree==compare)
+  }
+  
+ }
+ 
+ if(!is.na(compare)) return(node)
+}
 
+
+insert.element <- function(raw.tree, new.element){
+  compare  <- raw.tree[1]
+  i     <- 1
+  depth <- get.depth(raw.tree)
+  left.value  <- 0
+  right.value <- 0
+  
+  while(i <= 2^depth){
+      if((new.element < compare) && !is.na(compare)){ 
+        compare     <- raw.tree[2*i]
+        left.value  <- 1
+        right.value <- 0
+      }else{
+        compare     <- raw.tree[2*i + 1]
+        left.value  <- 0
+        right.value <- 1
+      }
+      if(is.na(compare)){
+        if(left.value==1)  raw.tree[2*i]     <- new.element
+        if(right.value==1) raw.tree[2*i + 1] <- new.element
+        break
+      }
+      i <- which(raw.tree==compare)
+  }
+  draw.tree(raw.tree)
+  return(raw.tree)
+}
 
 #path.to.convert <- paste0(shortPathName(
  # "C:\\Program Files (x86)\\ImageMagick-6.9.0-Q16\\"), "convert.exe")
