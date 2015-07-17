@@ -1,8 +1,6 @@
 library(dplyr)
 library(animation)
 
-duom <- read.table(file="data.txt", header=F)[, 1] %>% as.numeric()
-
 raw.bin.tree <- function(data){
 ### m <- the size of the array. If we want a all of our data to be stored in the tree, 
 ###      m should usually be a "big" number. The maximum number should not exceed 2^n, where 
@@ -17,7 +15,7 @@ raw.bin.tree <- function(data){
   for(j in 1:n){
     tmp.nr <- data[j]
     i <- 1
-    while(i < m){
+    while(i <= m){
       if(is.na(array[i, 2])){
         array[i ,2] <- tmp.nr
         i <- m
@@ -52,8 +50,6 @@ get.depth <- function(raw.tree){
   depth <- max(left, right) 
   return(depth)
 }
-
-get.depth(raw.tree)
 
 draw.tree <- function(raw.tree){
   scale <- get.depth(raw.tree)
@@ -119,8 +115,6 @@ draw.tree <- function(raw.tree){
   
 }
 
-draw.tree(raw.tree)
-
 search.tree <- function(raw.tree, key){
   compare  <- raw.tree[1]
   i     <- 1
@@ -131,12 +125,16 @@ search.tree <- function(raw.tree, key){
       cat(key, "is not in the tree\n")
       break
     }
+    
     if(key==compare){
       node <- i
       break
     }else{ 
-       if(key < compare && !is.na(compare)) compare <- raw.tree[2*i]
-       if(key > compare && !is.na(compare)) compare <- raw.tree[2*i + 1]
+       if(key < compare && !is.na(compare)){
+         compare <- raw.tree[2*i]
+       }else{
+         compare <- raw.tree[2*i + 1]
+       }
        if(!is.na(compare)) i <- which(raw.tree==compare)
   }
   
@@ -174,13 +172,92 @@ insert.element <- function(raw.tree, new.element){
   return(raw.tree)
 }
 
-#path.to.convert <- paste0(shortPathName(
- # "C:\\Program Files (x86)\\ImageMagick-6.9.0-Q16\\"), "convert.exe")
-#ani.options(convert=path.to.convert)
+animate.tree <- function(elements){
+  n    <- length(elements)
+  new.tree <- raw.bin.tree(elements[1:2])
+  for(i in 4:n){
+     new.tree <- insert.element(new.tree, elements[i])
+    }
+}
 
-#saveGIF({
- # ani.options(nmax = 40)
-  #draw.tree(raw.tree)
-  #}, interval = 0.20, movie.name = "tree.gif", ani.width = 700, ani.height = 700)
+delete.element <- function(raw.tree, element){
+  
+  old.tree <- raw.tree
+  n <- get.depth(raw.tree)
+  data <- raw.tree[!is.na(raw.tree)]
+  arrow.pointer <- matrix(ncol=3, nrow=length(data)) %>% as.data.frame()
+  colnames(arrow.pointer) <- c("Number", "Left", "Right")
+  arrow.pointer[, 1] <- data
+  
+  for(k in 1:length(data)){
+    index <- which(raw.tree==data[k])
+    if(!is.na(raw.tree[2*index])) arrow.pointer[arrow.pointer[, "Number"]==data[k], "Left"] <- 1
+    if(!is.na(raw.tree[2*index + 1])) arrow.pointer[arrow.pointer[, "Number"]==data[k], "Right"] <- 1
+  }
+  
+  tmp <- raw.tree[1]
+  i   <- 1
+  
+  while(i <= 2^n){
+    if(element==tmp){
+      
+      if(is.na(arrow.pointer[arrow.pointer[, "Number"]==element, "Left"]) && 
+           is.na(arrow.pointer[arrow.pointer[, "Number"]==element, "Right"])){
+        raw.tree[j] <- NA
+        break  
+      }
+      
+      j <- i
+      k <- i
+      right.element <- 8888
+      left.element  <- 8888
+      while(j <= 2^n && k <=2^n){
+        
+        
+        if(!is.na(raw.tree[2*(k)])){
+          raw.tree[k] <- raw.tree[2*(k+1)]
+          left.element  <- raw.tree[2*k]
+        }
+        
+        if(!is.na(raw.tree[2*(j) + 1])){
+          raw.tree[j] <- raw.tree[2*(j) + 1]
+          right.element <- raw.tree[2*j + 1]
+        }
+        
+        j <- which(old.tree==right.element)
+        k <- which(old.tree==left.element)
+      }
+    }
+    
+    if(element < tmp){ 
+      tmp <- raw.tree[2*i]
+      i   <- which(raw.tree==tmp)
+    }
+    if(element > tmp){ 
+      tmp <- raw.tree[2*i + 1]
+      i   <- which(raw.tree==tmp)
+    }
+  }   
+}
+###############
+# Realization # 
+###############
+
+duom <- read.table(file="data.txt", header=F)[, 1] %>% as.numeric()
+raw.tree <- raw.bin.tree(duom)
+draw.tree(raw.tree)
+get.depth(raw.tree)
+insert.element(raw.tree, 999)
+search.tree(raw.tree, 21)
+
+path.to.convert <- paste0(shortPathName(
+  "C:\\Program Files (x86)\\ImageMagick-6.9.0-Q16\\"), "convert.exe")
+ani.options(convert=path.to.convert)
+
+numbers <- sample(1:20)
+saveGIF({
+  ani.options(nmax = 40)
+  animate.tree(numbers)
+  }, interval = 2, movie.name = "bin tree.gif", ani.width = 500, ani.height = 500)
   
   
